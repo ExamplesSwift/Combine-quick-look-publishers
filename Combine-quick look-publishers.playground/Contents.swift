@@ -10,3 +10,25 @@ let _ = Just(42).sink { (value) in
   }
 }
 
+enum FutureError: Error {
+  case TookTooLong
+}
+
+func performLongRunningNetworkTask(completion: (Bool, Error?) -> ()) {
+  // long running network code here
+  // completion(true, nil)
+  completion(false, FutureError.TookTooLong)
+}
+
+let futurePublisher = Future<Bool, Error> { promise in
+  
+  performLongRunningNetworkTask { (userValid, err) in
+    if let err = err {
+      return promise(.failure(err))
+    }
+    
+    return promise(.success(userValid))
+  }
+}
+
+
